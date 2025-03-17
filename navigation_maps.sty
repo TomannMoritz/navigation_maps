@@ -1,0 +1,115 @@
+\ProvidesPackage{navigation_maps}
+
+\RequirePackage{pgf, pgfkeys, tikz}
+
+% Save min and max values for x and y direction
+\pgfkeys{
+    /xMin/.is family,
+    /xMin/deg/.initial=0,
+    /xMin/min/.initial=0,
+}
+
+\pgfkeys{
+    /xMax/.is family,
+    /xMax/deg/.initial=0,
+    /xMax/min/.initial=0,
+}
+
+\pgfkeys{
+    /yMin/.is family,
+    /yMin/deg/.initial=0,
+    /yMin/min/.initial=0,
+}
+
+\pgfkeys{
+    /yMax/.is family,
+    /yMax/deg/.initial=0,
+    /yMax/min/.initial=0,
+}
+
+
+
+% Arguments: xMin, xMax, yMin, yMax
+\newenvironment{nav_map}[4]
+% Run at the start
+{
+    \pgfqkeys{/xMin}{#1}
+    \pgfqkeys{/xMax}{#2}
+    \pgfqkeys{/yMin}{#3}
+    \pgfqkeys{/yMax}{#4}
+
+    \newcommand{\navBarSize}{0.5}
+    \newcommand{\navNumberOffset}{4}
+
+    \begin{tikzpicture}[scale=.4]
+        % 1 Degree is divided into 60 minutes
+        % 1 minute is divided into 5 blocks
+
+        \pgfmathsetmacro{\xMin}{(\pgfkeysvalueof{/xMin/deg} * 60 * 5) + (\pgfkeysvalueof{/xMin/min} * 5)}
+        \pgfmathsetmacro{\xMax}{(\pgfkeysvalueof{/xMax/deg} * 60 * 5) + (\pgfkeysvalueof{/xMax/min} * 5)}
+        \pgfmathsetmacro{\xDiff}{\xMax - \xMin}
+
+        \pgfmathsetmacro{\yMin}{(\pgfkeysvalueof{/yMin/deg} * 60 * 5) + (\pgfkeysvalueof{/yMin/min} * 5)}
+        \pgfmathsetmacro{\yMax}{(\pgfkeysvalueof{/yMax/deg} * 60 * 5) + (\pgfkeysvalueof{/yMax/min} * 5)}
+        \pgfmathsetmacro{\yDiff}{\yMax - \yMin}
+
+        % Draw bounding rectangle
+        \draw (0, 0) rectangle (\xDiff, \yDiff);
+
+
+        % -----------------------------------------
+        % x Axis
+        \foreach \i in {0, ..., \xDiff}{
+            \draw (\i - 1, -\navBarSize) rectangle (\i, 0);
+
+            \pgfmathsetmacro{\Xstart}{\i + \xMin}
+            \pgfmathsetmacro{\currDeg}{int((\i + \xMin) / (60 * 5))}
+
+
+            % Check for degrees
+            \pgfmathsetmacro{\countA}{int(\Xstart / (5 * 60))}
+            \pgfmathsetmacro{\countB}{int(5 * 60 * \countA)}
+            \pgfmathsetmacro{\DegreeOverlap}{\Xstart - \countB}
+
+            % Show degrees
+            \pgfmathparse{int(\DegreeOverlap)}
+            \ifnum \pgfmathresult=0
+                \draw[blue, thick] (\i, 0) -- (\i, -\navNumberOffset) node[anchor=north]{\currDeg $^{\circ}$};
+
+
+            \else
+                % Check for minutes
+                \pgfmathsetmacro{\countA}{int(\Xstart / 5)}
+                \pgfmathsetmacro{\countB}{int(5 * \countA)}
+                \pgfmathsetmacro{\MinuteOverlap}{\Xstart - \countB}
+
+                % Show minutes
+                \pgfmathparse{int(\MinuteOverlap)}
+                \ifnum \pgfmathresult=0
+                    \pgfmathsetmacro{\currMin}{int(int((\i + \xMin) / 5) - (\currDeg * 60))}
+
+                    \draw[gray, thick] (\i, 0) -- (\i, -2) node[anchor=north]{\currMin '};
+                \fi
+            \fi
+        }
+
+        \pgfmathsetmacro{\xCenter}{int(\xDiff / 2)}
+
+        % Set at least one degree value
+        \pgfmathsetmacro{\countA}{int(\xMin / (5 * 60))}
+        \pgfmathsetmacro{\countB}{int(\xMax / (5 * 60))}
+        \pgfmathsetmacro{\DegreeTotalOverlap}{int(\countB - \countA)}
+
+        \pgfmathparse{int(\DegreeTotalOverlap)}
+        \ifnum \pgfmathresult=0
+            \pgfmathsetmacro{\currDeg}{int(\xMin / (60 * 5))}
+
+            \draw[gray, thick] (\xCenter, -5) node[anchor=north]{\currDeg $^{\circ}$};
+        \fi
+
+}
+% Run at the end
+{
+    \end{tikzpicture}
+}
+
