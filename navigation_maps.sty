@@ -35,6 +35,11 @@
     \gdef\navAxisMin{#3}
     \gdef\navAxisMax{#4}
 
+    % Check 5 step increments
+    \pgfmathsetmacro{\minMinInc}{int(\navAxisMin / 25)}
+    \pgfmathsetmacro{\minMaxInc}{int(\navAxisMax / 25)}
+    \pgfmathsetmacro{\minDiff}{\minMaxInc - \minMinInc}
+
     \foreach \i in {0, ..., \navAxisDiff}{
         \pgfmathparse{\i}
         \ifnum \pgfmathresult>0
@@ -71,23 +76,17 @@
 
         \else
             % Check for minutes
-            \pgfmathsetmacro{\countA}{int(\Xstart / 5)}
-            \pgfmathsetmacro{\countB}{int(5 * \countA)}
-            \pgfmathsetmacro{\MinuteOverlap}{\Xstart - \countB}
+            % Create a mark for every minute
+            \pgfmathsetmacro{\minStepSize}{5}
+            \navShowMin{}
 
-            % Show minutes
-            \pgfmathparse{int(\MinuteOverlap)}
-            \ifnum \pgfmathresult=0
-                \pgfmathsetmacro{\currMin}{int(int((\i + \navAxisMin) / 5) - (\currDeg * 60))}
-
-                % Check x/y-Axis
-                \pgfmathparse{\navIsXAxis}
-                \ifnum \pgfmathresult=0
-                    \draw[black] (\i, 0) -- (\i, -2) node[anchor=north]{\currMin '};
-                \else
-                    \draw[black] (0, \i) -- (-2, \i) node[anchor=east]{\currMin '};
-                \fi
+            \pgfmathparse{int(\minDiff)}
+            \ifnum \pgfmathresult>0
+                \pgfmathsetmacro{\minStepSize}{5 * 5}
             \fi
+
+            % Show minutes (numbers)
+            \navShowMin{\currMin '}
         \fi
     }
 
@@ -112,8 +111,27 @@
     \fi
 }
 
-% Arguments: xMin, xMax, yMin, yMax
-\newenvironment{nav_map}[4]
+\newcommand{\navShowMin}[1]{
+    \pgfmathsetmacro{\countOverlapA}{int(\Xstart / \minStepSize)}
+    \pgfmathsetmacro{\countOverlapB}{int(\countOverlapA * \minStepSize)}
+    \pgfmathsetmacro{\MinOverlap}{\Xstart - \countOverlapB}
+
+    \pgfmathparse{int(\MinOverlap)}
+    \ifnum \pgfmathresult=0
+        \pgfmathsetmacro{\currMin}{int(int((\i + \navAxisMin) / 5) - (\currDeg * 60))}
+
+        % Check x/y-Axis
+        \pgfmathparse{\navIsXAxis}
+        \ifnum \pgfmathresult=0
+            \draw[black] (\i, 0) -- (\i, -2) node[anchor=north]{#1};
+        \else
+            \draw[black] (0, \i) -- (-2, \i) node[anchor=east]{#1};
+        \fi
+    \fi
+}
+
+% Arguments: xMin, xMax, yMin, yMax, figure scaling
+\newenvironment{nav_map}[5]
 % Run at the start
 {
     \pgfqkeys{/xMin}{#1}
@@ -124,7 +142,9 @@
     \newcommand{\navBarSize}{0.5}
     \newcommand{\navNumberOffset}{4}
 
-    \begin{tikzpicture}[scale=.4]
+    \gdef\navScaling{#5}
+
+    \begin{tikzpicture}[scale=\navScaling]
         % 1 Degree is divided into 60 minutes
         % 1 minute is divided into 5 blocks
 
