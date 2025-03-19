@@ -29,6 +29,22 @@
 \begin{nav_map}{deg=54, min=0}{deg=54, min=20}{deg=7, min=40}{deg=8, min=0}{0.1}
     \fill (10, 4) circle (0.5);
     \fill (4, 10) circle (0.25);
+
+    \navConvertCoords{1}{deg=54, min=10}
+    \pgfmathsetmacro{\navCoordY}{\navCoords}
+
+    \navConvertCoords{0}{deg=7, min=55}
+    \pgfmathsetmacro{\navCoordX}{\navCoords}
+    \fill (\navCoordX, \navCoordY) circle (1);
+
+    \navConvertCoords{1}{deg=54, min=3}
+    \pgfmathsetmacro{\navCoordY}{\navCoords}
+
+    \navConvertCoords{0}{deg=7, min=58}
+    \pgfmathsetmacro{\navCoordX}{\navCoords}
+    \fill (\navCoordX, \navCoordY) circle (1);
+
 \end{nav_map}
+
 
 \end{document}

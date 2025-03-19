@@ -104,9 +104,9 @@
         % Check x/y-Axis
         \pgfmathparse{\navIsXAxis}
         \ifnum \pgfmathresult=0
-            \draw[black] (\xCenter, -5) node[anchor=north]{\currDeg $^{\circ}$};
+            \draw[black] (\xCenter, -6) node[anchor=north]{\currDeg $^{\circ}$};
         \else
-            \draw[black] (-5, \xCenter) node[anchor=east]{\currDeg $^{\circ}$};
+            \draw[black] (-6, \xCenter) node[anchor=east]{\currDeg $^{\circ}$};
         \fi
     \fi
 }
@@ -130,14 +130,14 @@
     \fi
 }
 
-% Arguments: xMin, xMax, yMin, yMax, figure scaling
+% Arguments: yMin, yMax, xMin, xMax, figure scaling
 \newenvironment{nav_map}[5]
 % Run at the start
 {
-    \pgfqkeys{/xMin}{#1}
-    \pgfqkeys{/xMax}{#2}
-    \pgfqkeys{/yMin}{#3}
-    \pgfqkeys{/yMax}{#4}
+    \pgfqkeys{/yMin}{#1}
+    \pgfqkeys{/yMax}{#2}
+    \pgfqkeys{/xMin}{#3}
+    \pgfqkeys{/xMax}{#4}
 
     \newcommand{\navBarSize}{0.5}
     \newcommand{\navNumberOffset}{4}
@@ -172,4 +172,29 @@
 {
     \end{tikzpicture}
 }
+
+\pgfkeys{
+    /navConvertCoord/.is family,
+    /navConvertCoord/deg/.initial=0,
+    /navConvertCoord/min/.initial=0
+}
+
+% Arguments: isXAxis, Coords
+\newcommand{\navConvertCoords}[2]{
+    \pgfkeys{/navConvertCoord/.cd, #2}%
+    \pgfmathparse{#1}
+    \ifnum \pgfmathresult=0
+        \pgfmathsetmacro{\xMinConv}{\pgfkeysvalueof{/xMin/deg} * 60 * 5 + \pgfkeysvalueof{/xMin/min} * 5}
+        \pgfmathsetmacro{\xRelativeConv}{\pgfkeysvalueof{/navConvertCoord/deg} * 60 * 5 + \pgfkeysvalueof{/navConvertCoord/min} * 5 - \xMinConv}
+        \pgfmathparse{\xRelativeConv}
+
+    \else
+        \pgfmathsetmacro{\yMinConv}{\pgfkeysvalueof{/yMin/deg} * 60 * 5 + \pgfkeysvalueof{/yMin/min} * 5}
+        \pgfmathsetmacro{\yRelativeConv}{\pgfkeysvalueof{/navConvertCoord/deg} * 60 * 5 + \pgfkeysvalueof{/navConvertCoord/min} * 5 - \yMinConv}
+        \pgfmathparse{\yRelativeConv}
+    \fi
+
+    \pgfmathsetmacro{\navCoords}{\pgfmathresult}
+}
+
 
