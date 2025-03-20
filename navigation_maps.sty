@@ -2,6 +2,9 @@
 
 \RequirePackage{pgf, pgfkeys, tikz}
 
+% Compare strings
+\RequirePackage{etoolbox}
+
 % Save min and max values for x and y direction
 \pgfkeys{
     /xMin/.is family,
@@ -181,7 +184,7 @@
 
 % Arguments: isXAxis, Coords
 \newcommand{\navConvertCoords}[2]{
-    \pgfkeys{/navConvertCoord/.cd, #2}%
+    \pgfkeys{/navConvertCoord/.cd, #2}
     \pgfmathparse{#1}
     \ifnum \pgfmathresult=0
         \pgfmathsetmacro{\xMinConv}{\pgfkeysvalueof{/xMin/deg} * 60 * 5 + \pgfkeysvalueof{/xMin/min} * 5}
@@ -198,3 +201,149 @@
 }
 
 
+
+\pgfkeys{
+    /navSymbolSettings/.is family,
+    /navSymbolSettings/xCoord/.initial=0,
+    /navSymbolSettings/yCoord/.initial=0,
+    /navSymbolSettings/scaling/.initial=1,
+    /navSymbolSettings/option/.initial=0
+}
+
+\pgfkeys{
+    /markOptions/.is family,
+    /markOptions/top/.initial=ball, % cardinalmarks (north, east, south, west), one ball, two balls, one triangle
+    /markOptions/top/.store in = \navTopMarkings,
+    /markOptions/area/.initial=empty, % empty, filled
+    /markOptions/xCoord/.initial=0,
+    /markOptions/yCoord/.initial=0,
+    /markOptions/scaling/.initial=1,
+}
+
+
+% Arguments: navSymbolSettings, markOptions
+\newcommand{\navMarks}[2]{
+    \pgfkeys{/navSymbolSettings/.cd, #1}
+    \gdef\navA{\pgfkeysvalueof{/navSymbolSettings/xCoord}}
+    \gdef\navB{\pgfkeysvalueof{/navSymbolSettings/yCoord}}
+    \gdef\navC{\pgfkeysvalueof{/navSymbolSettings/scaling} * 0.5}
+
+
+    % Right side
+    \path[draw] (0.5 * \navC + \navA, \navB) -- (-2.5 * \navC + \navA, \navB) -- (2.5 * \navC + \navA, \navB) -- (1.9 * \navC + \navA, \navB) -- (1.5 * \navC + \navA, 1.8 * \navC + \navB) -- (2.2 * \navC + \navA, 6 * \navC + \navB);
+
+    % Left side
+    \path[draw] (-0.5 * \navC + \navA, \navB) -- (2.5 * \navC + \navA, \navB) -- (-1.9 * \navC + \navA, \navB) -- (-0.4 * \navC + \navA, 2.4 * \navC + \navB) -- (1.1 * \navC + \navA, 6.3 * \navC + \navB);
+
+    % Top
+    \path[draw] (2.2 * \navC + \navA, 6 * \navC + \navB) -- (1.1 * \navC + \navA, 6.3 * \navC + \navB);
+
+    % Mid line
+    \path[draw] (\navA, 0.5 * \navC + \navB) -- (1.65 * \navC + \navA, 6.15 * \navC  + \navB);
+
+    % Location position
+    \draw[] (\navA, \navB) circle (0.5 * \navC);
+
+
+    % TODO: different marks
+    % Currently only pillar buoy
+    \pgfkeys{/markOptions/.cd, xCoord=\navA + 1.65 * \navC + 0.29 \navC, yCoord=\navB + 6.15 * \navC + 1.17 * \navC, scaling=\navC, top=#2}
+    \navTopMark
+
+}
+
+
+\newcommand{\navTopMark}[0]{
+    % Set arguments
+    \gdef\navTopA{\pgfkeysvalueof{/markOptions/xCoord}}
+    \gdef\navTopB{\pgfkeysvalueof{/markOptions/yCoord}}
+    \gdef\navTopC{\pgfkeysvalueof{/markOptions/scaling} * 1.5}
+    \gdef\navTopSpace{\navTopC * 1.5}
+
+    % Ball/Circle
+    \ifdefstring{\navTopMarkings}{ball}{
+        \draw (0.29 * \navTopC + \navTopA, \navTopC + \navTopB) circle (\navTopC * 0.75);
+    }
+
+    % Triangles: towards center
+    % Up:
+    % Left: (-0.87, -0.83) => (-0.58, 0.17)
+    % Right: (0.28, -1.17) => (0.57, -0.17)
+    % Offset: (0.29, 1)
+
+    % Down:
+    % Left: (-0.28, 1.17)
+    % Right: (0.87, 0.83)
+
+    % Triangle up
+    \ifdefstring{\navTopMarkings}{up}{
+        \draw (-0.58 * \navTopC + \navTopA, 0.17 * \navTopC + \navTopB) --
+        (0.57 * \navTopC + \navTopA, -0.17 * \navTopC + \navTopB) --
+        (0.29 * \navTopC + \navTopA, \navTopC + \navTopB) -- cycle;
+    }
+
+    % Cardinalmarks
+    % North: both point up
+    \ifdefstring{\navTopMarkings}{north}{
+        % Bottom
+        \draw (-0.58 * \navTopC + \navTopA, 0.17 * \navTopC + \navTopB) --
+        (0.57 * \navTopC + \navTopA, -0.17 * \navTopC + \navTopB) --
+        (0.29 * \navTopC + \navTopA, \navTopC + \navTopB) -- cycle;
+
+        \gdef\navSecondMarkX{0.29 * \navTopSpace + \navTopA}
+        \gdef\navSecondMarkY{1 * \navTopSpace + \navTopB}
+
+        % Top
+        \draw (-0.58 * \navTopC + \navSecondMarkX, 0.17 * \navTopC + \navSecondMarkY) --
+        (0.57 * \navTopC + \navSecondMarkX, -0.17 * \navTopC + \navSecondMarkY) --
+        (0.29 * \navTopC + \navSecondMarkX, \navTopC + \navSecondMarkY) -- cycle;
+    }
+
+    % East: both point away from each other
+    \ifdefstring{\navTopMarkings}{east}{
+        % Bottom
+        \draw (-0.28 * \navTopC + \navTopA, 1.17 * \navTopC + \navTopB) --
+        (0.87 * \navTopC + \navTopA, 0.83 * \navTopC + \navTopB) --
+        (\navTopA, \navTopB) -- cycle;
+
+        \gdef\navSecondMarkX{0.29 * \navTopSpace + \navTopA}
+        \gdef\navSecondMarkY{1 * \navTopSpace + \navTopB}
+
+        % Top
+        \draw (-0.58 * \navTopC + \navSecondMarkX, 0.17 * \navTopC + \navSecondMarkY) --
+        (0.57 * \navTopC + \navSecondMarkX, -0.17 * \navTopC + \navSecondMarkY) --
+        (0.29 * \navTopC + \navSecondMarkX, \navTopC + \navSecondMarkY) -- cycle;
+    }
+
+    % South: both point down
+    \ifdefstring{\navTopMarkings}{south}{
+        % Bottom
+        \draw (-0.28 * \navTopC + \navTopA, 1.17 * \navTopC + \navTopB) --
+        (0.87 * \navTopC + \navTopA, 0.83 * \navTopC + \navTopB) --
+        (\navTopA, \navTopB) -- cycle;
+
+        \gdef\navSecondMarkX{0.29 * \navTopSpace + \navTopA}
+        \gdef\navSecondMarkY{1 * \navTopSpace + \navTopB}
+
+        % Top
+        \draw (-0.28 * \navTopC + \navSecondMarkX, 1.17 * \navTopC + \navSecondMarkY) --
+        (0.87 * \navTopC + \navSecondMarkX, 0.83 * \navTopC + \navSecondMarkY) --
+        (\navSecondMarkX, \navSecondMarkY) -- cycle;
+    }
+
+    % West: both point to each other
+    \ifdefstring{\navTopMarkings}{west}{
+        % Bottom
+        \draw (-0.58 * \navTopC + \navTopA, 0.17 * \navTopC + \navTopB) --
+        (0.57 * \navTopC + \navTopA, -0.17 * \navTopC + \navTopB) --
+        (0.29 * \navTopC + \navTopA, \navTopC + \navTopB) -- cycle;
+
+        \gdef\navSecondMarkX{0.29 * \navTopSpace + \navTopA}
+        \gdef\navSecondMarkY{1 * \navTopSpace + \navTopB}
+
+        % Top
+        \draw (-0.28 * \navTopC + \navSecondMarkX, 1.17 * \navTopC + \navSecondMarkY) --
+        (0.87 * \navTopC + \navSecondMarkX, 0.83 * \navTopC + \navSecondMarkY) --
+        (\navSecondMarkX, \navSecondMarkY) -- cycle;
+    }
+}
