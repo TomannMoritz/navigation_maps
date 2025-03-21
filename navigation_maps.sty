@@ -255,95 +255,99 @@
 
 \newcommand{\navTopMark}[0]{
     % Set arguments
-    \gdef\navTopA{\pgfkeysvalueof{/markOptions/xCoord}}
-    \gdef\navTopB{\pgfkeysvalueof{/markOptions/yCoord}}
-    \gdef\navTopC{\pgfkeysvalueof{/markOptions/scaling} * 1.5}
-    \gdef\navTopSpace{\navTopC * 1.5}
+    \gdef\navTopX{\pgfkeysvalueof{/markOptions/xCoord}}
+    \gdef\navTopY{\pgfkeysvalueof{/markOptions/yCoord}}
+    \gdef\navTopS{\pgfkeysvalueof{/markOptions/scaling} * 1.5}
+    \gdef\navTopSpace{\navTopS * 1.5}
 
     % Ball/Circle
     \ifdefstring{\navTopMarkings}{ball}{
-        \draw (0.29 * \navTopC + \navTopA, \navTopC + \navTopB) circle (\navTopC * 0.75);
+        \draw (0.29 * \navTopS + \navTopX, \navTopS + \navTopY) circle (\navTopS * 0.75);
     }
-
-    % Triangles: towards center
-    % Up:
-    % Left: (-0.87, -0.83) => (-0.58, 0.17)
-    % Right: (0.28, -1.17) => (0.57, -0.17)
-    % Offset: (0.29, 1)
-
-    % Down:
-    % Left: (-0.28, 1.17)
-    % Right: (0.87, 0.83)
 
     % Triangle up
     \ifdefstring{\navTopMarkings}{up}{
-        \draw (-0.58 * \navTopC + \navTopA, 0.17 * \navTopC + \navTopB) --
-        (0.57 * \navTopC + \navTopA, -0.17 * \navTopC + \navTopB) --
-        (0.29 * \navTopC + \navTopA, \navTopC + \navTopB) -- cycle;
+        \navTriangleUp{\navTopY}{\navTopX}{\navTopS}
     }
 
     % Cardinalmarks
     % North: both point up
     \ifdefstring{\navTopMarkings}{north}{
         % Bottom
-        \draw (-0.58 * \navTopC + \navTopA, 0.17 * \navTopC + \navTopB) --
-        (0.57 * \navTopC + \navTopA, -0.17 * \navTopC + \navTopB) --
-        (0.29 * \navTopC + \navTopA, \navTopC + \navTopB) -- cycle;
-
-        \gdef\navSecondMarkX{0.29 * \navTopSpace + \navTopA}
-        \gdef\navSecondMarkY{1 * \navTopSpace + \navTopB}
+        \navTriangleUp{\navTopY}{\navTopX}{\navTopS}
 
         % Top
-        \draw (-0.58 * \navTopC + \navSecondMarkX, 0.17 * \navTopC + \navSecondMarkY) --
-        (0.57 * \navTopC + \navSecondMarkX, -0.17 * \navTopC + \navSecondMarkY) --
-        (0.29 * \navTopC + \navSecondMarkX, \navTopC + \navSecondMarkY) -- cycle;
+        \navPositionNextMark{\navTopY}{\navTopX}
+        \navTriangleUp{\navNextMarkY}{\navNextMarkX}{\navTopS}
     }
 
     % East: both point away from each other
     \ifdefstring{\navTopMarkings}{east}{
         % Bottom
-        \draw (-0.28 * \navTopC + \navTopA, 1.17 * \navTopC + \navTopB) --
-        (0.87 * \navTopC + \navTopA, 0.83 * \navTopC + \navTopB) --
-        (\navTopA, \navTopB) -- cycle;
-
-        \gdef\navSecondMarkX{0.29 * \navTopSpace + \navTopA}
-        \gdef\navSecondMarkY{1 * \navTopSpace + \navTopB}
+        \navTriangleDown{\navTopY}{\navTopX}{\navTopS}
 
         % Top
-        \draw (-0.58 * \navTopC + \navSecondMarkX, 0.17 * \navTopC + \navSecondMarkY) --
-        (0.57 * \navTopC + \navSecondMarkX, -0.17 * \navTopC + \navSecondMarkY) --
-        (0.29 * \navTopC + \navSecondMarkX, \navTopC + \navSecondMarkY) -- cycle;
+        \navPositionNextMark{\navTopY}{\navTopX}
+        \navTriangleUp{\navNextMarkY}{\navNextMarkX}{\navTopS}
     }
 
     % South: both point down
     \ifdefstring{\navTopMarkings}{south}{
         % Bottom
-        \draw (-0.28 * \navTopC + \navTopA, 1.17 * \navTopC + \navTopB) --
-        (0.87 * \navTopC + \navTopA, 0.83 * \navTopC + \navTopB) --
-        (\navTopA, \navTopB) -- cycle;
-
-        \gdef\navSecondMarkX{0.29 * \navTopSpace + \navTopA}
-        \gdef\navSecondMarkY{1 * \navTopSpace + \navTopB}
+        \navTriangleDown{\navTopY}{\navTopX}{\navTopS}
 
         % Top
-        \draw (-0.28 * \navTopC + \navSecondMarkX, 1.17 * \navTopC + \navSecondMarkY) --
-        (0.87 * \navTopC + \navSecondMarkX, 0.83 * \navTopC + \navSecondMarkY) --
-        (\navSecondMarkX, \navSecondMarkY) -- cycle;
+        \navPositionNextMark{\navTopY}{\navTopX}
+        \navTriangleDown{\navNextMarkY}{\navNextMarkX}{\navTopS}
     }
 
     % West: both point to each other
     \ifdefstring{\navTopMarkings}{west}{
         % Bottom
-        \draw (-0.58 * \navTopC + \navTopA, 0.17 * \navTopC + \navTopB) --
-        (0.57 * \navTopC + \navTopA, -0.17 * \navTopC + \navTopB) --
-        (0.29 * \navTopC + \navTopA, \navTopC + \navTopB) -- cycle;
-
-        \gdef\navSecondMarkX{0.29 * \navTopSpace + \navTopA}
-        \gdef\navSecondMarkY{1 * \navTopSpace + \navTopB}
+        \navTriangleUp{\navTopY}{\navTopX}{\navTopS}
 
         % Top
-        \draw (-0.28 * \navTopC + \navSecondMarkX, 1.17 * \navTopC + \navSecondMarkY) --
-        (0.87 * \navTopC + \navSecondMarkX, 0.83 * \navTopC + \navSecondMarkY) --
-        (\navSecondMarkX, \navSecondMarkY) -- cycle;
+        \navPositionNextMark{\navTopY}{\navTopX}
+        \navTriangleDown{\navNextMarkY}{\navNextMarkX}{\navTopS}
     }
+}
+
+
+% Draw single triangle with relative coordinates
+% Triangles: towards center
+% Up:
+% Left: (-0.87, -0.83) => (-0.58, 0.17)
+% Right: (0.28, -1.17) => (0.57, -0.17)
+% Offset: (0.29, 1)
+
+% Down:
+% Left: (-0.28, 1.17)
+% Right: (0.87, 0.83)
+
+% Arguments: y-Coord, x-Coord, scaling
+\newcommand{\navTriangleUp}[3]{
+    \gdef\navTriangleUpY{#1}
+    \gdef\navTriangleUpX{#2}
+    \gdef\navTriangleUpScaling{#3}
+
+    \draw (-0.58 * \navTriangleUpScaling + \navTriangleUpX, 0.17 * \navTriangleUpScaling + \navTriangleUpY) --
+    (0.57 * \navTriangleUpScaling + \navTriangleUpX, -0.17 * \navTriangleUpScaling + \navTriangleUpY) --
+    (0.29 * \navTriangleUpScaling + \navTriangleUpX, \navTriangleUpScaling + \navTriangleUpY) -- cycle;
+}
+
+% Arguments: y-Coord, x-Coord
+\newcommand{\navPositionNextMark}[2]{
+    \gdef\navNextMarkY{1 * \navTopSpace + #1}
+    \gdef\navNextMarkX{0.29 * \navTopSpace + #2}
+}
+
+% Arguments: y-Coord, x-Coord, scaling
+\newcommand{\navTriangleDown}[3]{
+    \gdef\navTriangleDownY{#1}
+    \gdef\navTriangleDownX{#2}
+    \gdef\navTriangleDownScaling{#3}
+
+    \draw (-0.28 * \navTriangleDownScaling + \navTriangleDownX, 1.17 * \navTriangleDownScaling + \navTriangleDownY) --
+    (0.87 * \navTriangleDownScaling + \navTriangleDownX, 0.83 * \navTriangleDownScaling + \navTriangleDownY) --
+    (\navTriangleDownX, \navTriangleDownY) -- cycle;
 }
