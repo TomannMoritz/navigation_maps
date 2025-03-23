@@ -32,28 +32,22 @@
 
     % Calculate relative coordinates
     \navConvertCoords{1}{deg=54, min=10}
-    \pgfmathsetmacro{\navCoordY}{\navCoords}
-
     \navConvertCoords{0}{deg=7, min=55}
-    \pgfmathsetmacro{\navCoordX}{\navCoords}
-    \fill (\navCoordX, \navCoordY) circle (1);
+    \fill (\navGetCoord{x}, \navGetCoord{y}) circle (1);
 
 
     % Calculate relative coordinates
     \navConvertCoords{1}{deg=54, min=3}
-    \pgfmathsetmacro{\navCoordY}{\navCoords}
-
     \navConvertCoords{0}{deg=7, min=58}
-    \pgfmathsetmacro{\navCoordX}{\navCoords}
 
-    \navMarks{xCoord=\navCoordX, yCoord=\navCoordY, scaling=1}{ball}
-    \navMarks{xCoord=\navCoordX - 10, yCoord=\navCoordY, scaling=1}{up}
+    \navMarks{x=\navGetCoord{x}, y=\navGetCoord{y}, scaling=1}{ball}
+    \navMarks{x=\navGetCoord{x} - 10, y=\navGetCoord{y}, scaling=1}{up}
 
     % cardinalmarks
-    \navMarks{xCoord=25, yCoord=25, scaling=1}{north}
-    \navMarks{xCoord=35, yCoord=15, scaling=1}{east}
-    \navMarks{xCoord=25, yCoord=5, scaling=1}{south}
-    \navMarks{xCoord=15, yCoord=15, scaling=1}{west}
+    \navMarks{x=25, y=25, scaling=1}{north}
+    \navMarks{x=35, y=15, scaling=1}{east}
+    \navMarks{x=25, y=5, scaling=1}{south}
+    \navMarks{x=15, y=15, scaling=1}{west}
 \end{nav_map}
 
 

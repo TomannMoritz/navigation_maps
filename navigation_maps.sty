@@ -179,33 +179,39 @@
 \pgfkeys{
     /navConvertCoord/.is family,
     /navConvertCoord/deg/.initial=0,
-    /navConvertCoord/min/.initial=0
+    /navConvertCoord/min/.initial=0,
+    /navConvertCoord/x/.initial=0,
+    /navConvertCoord/y/.initial=0,
 }
 
-% Arguments: isXAxis, Coords
+% Arguments: isXAxis (x: 0, y: 1), Coords
 \newcommand{\navConvertCoords}[2]{
     \pgfkeys{/navConvertCoord/.cd, #2}
     \pgfmathparse{#1}
     \ifnum \pgfmathresult=0
         \pgfmathsetmacro{\xMinConv}{\pgfkeysvalueof{/xMin/deg} * 60 * 5 + \pgfkeysvalueof{/xMin/min} * 5}
         \pgfmathsetmacro{\xRelativeConv}{\pgfkeysvalueof{/navConvertCoord/deg} * 60 * 5 + \pgfkeysvalueof{/navConvertCoord/min} * 5 - \xMinConv}
-        \pgfmathparse{\xRelativeConv}
 
+        \pgfkeyssetvalue{/navConvertCoord/x}{\xRelativeConv}
     \else
         \pgfmathsetmacro{\yMinConv}{\pgfkeysvalueof{/yMin/deg} * 60 * 5 + \pgfkeysvalueof{/yMin/min} * 5}
         \pgfmathsetmacro{\yRelativeConv}{\pgfkeysvalueof{/navConvertCoord/deg} * 60 * 5 + \pgfkeysvalueof{/navConvertCoord/min} * 5 - \yMinConv}
-        \pgfmathparse{\yRelativeConv}
-    \fi
 
-    \pgfmathsetmacro{\navCoords}{\pgfmathresult}
+        \pgfkeyssetvalue{/navConvertCoord/y}{\yRelativeConv}
+    \fi
 }
 
+
+% Return the key value from previous coord calculation
+\newcommand{\navGetCoord}[1]{
+    \pgfkeysvalueof{/navConvertCoord/#1}
+}
 
 
 \pgfkeys{
     /navSymbolSettings/.is family,
-    /navSymbolSettings/xCoord/.initial=0,
-    /navSymbolSettings/yCoord/.initial=0,
+    /navSymbolSettings/x/.initial=0,
+    /navSymbolSettings/y/.initial=0,
     /navSymbolSettings/scaling/.initial=1,
     /navSymbolSettings/option/.initial=0
 }
@@ -215,8 +221,8 @@
     /markOptions/top/.initial=ball, % cardinalmarks (north, east, south, west), one ball, two balls, one triangle
     /markOptions/top/.store in = \navTopMarkings,
     /markOptions/area/.initial=empty, % empty, filled
-    /markOptions/xCoord/.initial=0,
-    /markOptions/yCoord/.initial=0,
+    /markOptions/x/.initial=0,
+    /markOptions/y/.initial=0,
     /markOptions/scaling/.initial=1,
 }
 
@@ -224,8 +230,8 @@
 % Arguments: navSymbolSettings, markOptions
 \newcommand{\navMarks}[2]{
     \pgfkeys{/navSymbolSettings/.cd, #1}
-    \gdef\navA{\pgfkeysvalueof{/navSymbolSettings/xCoord}}
-    \gdef\navB{\pgfkeysvalueof{/navSymbolSettings/yCoord}}
+    \gdef\navA{\pgfkeysvalueof{/navSymbolSettings/x}}
+    \gdef\navB{\pgfkeysvalueof{/navSymbolSettings/y}}
     \gdef\navC{\pgfkeysvalueof{/navSymbolSettings/scaling} * 0.5}
 
 
@@ -247,7 +253,7 @@
 
     % TODO: different marks
     % Currently only pillar buoy
-    \pgfkeys{/markOptions/.cd, xCoord=\navA + 1.65 * \navC + 0.29 \navC, yCoord=\navB + 6.15 * \navC + 1.17 * \navC, scaling=\navC, top=#2}
+    \pgfkeys{/markOptions/.cd, x=\navA + 1.65 * \navC + 0.29 \navC, y=\navB + 6.15 * \navC + 1.17 * \navC, scaling=\navC, top=#2}
     \navTopMark
 
 }
@@ -255,8 +261,8 @@
 
 \newcommand{\navTopMark}[0]{
     % Set arguments
-    \gdef\navTopX{\pgfkeysvalueof{/markOptions/xCoord}}
-    \gdef\navTopY{\pgfkeysvalueof{/markOptions/yCoord}}
+    \gdef\navTopX{\pgfkeysvalueof{/markOptions/x}}
+    \gdef\navTopY{\pgfkeysvalueof{/markOptions/y}}
     \gdef\navTopS{\pgfkeysvalueof{/markOptions/scaling} * 1.5}
     \gdef\navTopSpace{\navTopS * 1.5}
 
