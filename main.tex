@@ -31,23 +31,35 @@
     \fill (4, 10) circle (0.25);
 
     % Calculate relative coordinates
-    \navConvertCoords{1}{deg=54, min=10}
-    \navConvertCoords{0}{deg=7, min=55}
-    \fill (\navGetCoord{x}, \navGetCoord{y}) circle (1);
+    \navConvertCoords{1}{deg=54, min=1, sec=36}
+    \navConvertCoords{0}{deg=7, min=40, sec=12}
+    \fill (\navGetCoord{x}, \navGetCoord{y}) circle (.1);
 
 
     % Calculate relative coordinates
     \navConvertCoords{1}{deg=54, min=3}
     \navConvertCoords{0}{deg=7, min=58}
 
-    \navMarks{x=\navGetCoord{x}, y=\navGetCoord{y}, scaling=1}{ball}
-    \navMarks{x=\navGetCoord{x} - 10, y=\navGetCoord{y}, scaling=1}{up}
+    % Pillar buoys
+    \navMarks{x=\navGetCoord{x} - 20, y=\navGetCoord{y} + 10, scaling=1}{}
+    \navMarks{x=\navGetCoord{x} - 10, y=\navGetCoord{y} + 10, scaling=1}{buoyArea=fill, top=circle}
+    \navMarks{x=\navGetCoord{x}, y=\navGetCoord{y} + 10, scaling=1}{buoyArea=fill, top=circle, topArea=fill}
+
+    % Conical
+    \navMarks{x=\navGetCoord{x} - 20, y=\navGetCoord{y}, scaling=1}{buoy=conical}
+    \navMarks{x=\navGetCoord{x} - 10, y=\navGetCoord{y}, scaling=1}{buoy=conical, buoyArea=fill, top=up}
+    \navMarks{x=\navGetCoord{x}, y=\navGetCoord{y}, scaling=1}{buoy=conical, buoyArea=fill, top=up, topArea=fill}
+
+    % Cylindrical
+    \navMarks{x=\navGetCoord{x} - 20, y=\navGetCoord{y} - 10, scaling=1}{buoy=cylindrical}
+    \navMarks{x=\navGetCoord{x} - 10, y=\navGetCoord{y} - 10, scaling=1}{buoy=cylindrical, buoyArea=fill, top=box}
+    \navMarks{x=\navGetCoord{x}, y=\navGetCoord{y} - 10, scaling=1}{buoy=cylindrical, buoyArea=fill, top=box, topArea=fill}
 
     % cardinalmarks
-    \navMarks{x=25, y=25, scaling=1}{north}
-    \navMarks{x=35, y=15, scaling=1}{east}
-    \navMarks{x=25, y=5, scaling=1}{south}
-    \navMarks{x=15, y=15, scaling=1}{west}
+    \navMarks{x=25, y=25, scaling=1}{top=north}
+    \navMarks{x=35, y=15, scaling=1}{top=east}
+    \navMarks{x=25, y=5, scaling=1}{top=south}
+    \navMarks{x=15, y=15, scaling=1}{top=west}
 \end{nav_map}
 
 

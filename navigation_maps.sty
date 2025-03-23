@@ -180,6 +180,7 @@
     /navConvertCoord/.is family,
     /navConvertCoord/deg/.initial=0,
     /navConvertCoord/min/.initial=0,
+    /navConvertCoord/sec/.initial=0,
     /navConvertCoord/x/.initial=0,
     /navConvertCoord/y/.initial=0,
 }
@@ -190,12 +191,12 @@
     \pgfmathparse{#1}
     \ifnum \pgfmathresult=0
         \pgfmathsetmacro{\xMinConv}{\pgfkeysvalueof{/xMin/deg} * 60 * 5 + \pgfkeysvalueof{/xMin/min} * 5}
-        \pgfmathsetmacro{\xRelativeConv}{\pgfkeysvalueof{/navConvertCoord/deg} * 60 * 5 + \pgfkeysvalueof{/navConvertCoord/min} * 5 - \xMinConv}
+        \pgfmathsetmacro{\xRelativeConv}{\pgfkeysvalueof{/navConvertCoord/deg} * 60 * 5 + \pgfkeysvalueof{/navConvertCoord/min} * 5 + \pgfkeysvalueof{/navConvertCoord/sec} / 12 - \xMinConv}
 
         \pgfkeyssetvalue{/navConvertCoord/x}{\xRelativeConv}
     \else
         \pgfmathsetmacro{\yMinConv}{\pgfkeysvalueof{/yMin/deg} * 60 * 5 + \pgfkeysvalueof{/yMin/min} * 5}
-        \pgfmathsetmacro{\yRelativeConv}{\pgfkeysvalueof{/navConvertCoord/deg} * 60 * 5 + \pgfkeysvalueof{/navConvertCoord/min} * 5 - \yMinConv}
+        \pgfmathsetmacro{\yRelativeConv}{\pgfkeysvalueof{/navConvertCoord/deg} * 60 * 5 + \pgfkeysvalueof{/navConvertCoord/min} * 5 + \pgfkeysvalueof{/navConvertCoord/sec} / 12 - \yMinConv}
 
         \pgfkeyssetvalue{/navConvertCoord/y}{\yRelativeConv}
     \fi
@@ -218,9 +219,12 @@
 
 \pgfkeys{
     /markOptions/.is family,
-    /markOptions/top/.initial=ball, % cardinalmarks (north, east, south, west), one ball, two balls, one triangle
+    % Buoy options: pillar, conical, cylindrical, spherical, ..
+    /markOptions/buoy/.store in = \navBuoyOption,
+    /markOptions/buoyArea/.store in = \navBuoyArea,
+    % cardinalmarks (north, east, south, west), circle (ball), triangle, box (cylinder)
     /markOptions/top/.store in = \navTopMarkings,
-    /markOptions/area/.initial=empty, % empty, filled
+    /markOptions/topArea/.store in = \navTopArea,
     /markOptions/x/.initial=0,
     /markOptions/y/.initial=0,
     /markOptions/scaling/.initial=1,
@@ -229,32 +233,62 @@
 
 % Arguments: navSymbolSettings, markOptions
 \newcommand{\navMarks}[2]{
+    % Set general navSymbol keys
     \pgfkeys{/navSymbolSettings/.cd, #1}
     \gdef\navA{\pgfkeysvalueof{/navSymbolSettings/x}}
     \gdef\navB{\pgfkeysvalueof{/navSymbolSettings/y}}
     \gdef\navC{\pgfkeysvalueof{/navSymbolSettings/scaling} * 0.5}
 
 
-    % Right side
-    \path[draw] (0.5 * \navC + \navA, \navB) -- (-2.5 * \navC + \navA, \navB) -- (2.5 * \navC + \navA, \navB) -- (1.9 * \navC + \navA, \navB) -- (1.5 * \navC + \navA, 1.8 * \navC + \navB) -- (2.2 * \navC + \navA, 6 * \navC + \navB);
-
-    % Left side
-    \path[draw] (-0.5 * \navC + \navA, \navB) -- (2.5 * \navC + \navA, \navB) -- (-1.9 * \navC + \navA, \navB) -- (-0.4 * \navC + \navA, 2.4 * \navC + \navB) -- (1.1 * \navC + \navA, 6.3 * \navC + \navB);
-
-    % Top
-    \path[draw] (2.2 * \navC + \navA, 6 * \navC + \navB) -- (1.1 * \navC + \navA, 6.3 * \navC + \navB);
-
-    % Mid line
-    \path[draw] (\navA, 0.5 * \navC + \navB) -- (1.65 * \navC + \navA, 6.15 * \navC  + \navB);
-
-    % Location position
-    \draw[] (\navA, \navB) circle (0.5 * \navC);
+    % Set specific mark keys
+    % Initial values
+    \pgfkeys{/markOptions/.cd, buoy=pillar, buoyArea=, top=, topArea=}
+    \pgfkeys{/markOptions/.cd, #2}
 
 
     % TODO: different marks
-    % Currently only pillar buoy
-    \pgfkeys{/markOptions/.cd, x=\navA + 1.65 * \navC + 0.29 \navC, y=\navB + 6.15 * \navC + 1.17 * \navC, scaling=\navC, top=#2}
-    \navTopMark
+    \ifdefstring{\navBuoyOption}{pillar}{
+        % Right side
+        \draw[\navBuoyArea] (2.5 * \navC + \navA, \navB) -- (1.9 * \navC + \navA, \navB) -- (1.5 * \navC + \navA, 1.8 * \navC + \navB) -- (2.2 * \navC + \navA, 6 * \navC + \navB) --
+        % Left Side
+        (1.1 * \navC + \navA, 6.3 * \navC + \navB) -- (-0.4 * \navC + \navA, 2.4 * \navC + \navB) -- (-1.9 * \navC + \navA, \navB) -- (-2.5 * \navC + \navA, \navB) -- cycle;
+
+
+        % Mid line
+        \path[draw] (\navA, 0.5 * \navC + \navB) -- (1.65 * \navC + \navA, 6.15 * \navC  + \navB);
+
+
+        \pgfkeys{/markOptions/.cd, x=\navA + 1.65 * \navC + 0.29 \navC, y=\navB + 6.15 * \navC + 1.17 * \navC, scaling=\navC}
+        \navTopMark
+
+    }
+
+    % Conical bouy:
+    \ifdefstring{\navBuoyOption}{conical}{
+        % Left side
+        \draw[\navBuoyArea] (-1.55 * \navC + \navA, \navB) -- (-1.3 * \navC + \navA, \navB) --
+        % Right side
+        (0.6 * \navC + \navA, 2.5 * \navC + \navB) -- (1.25 * \navC + \navA, \navB) -- (1.55 * \navC + \navA, \navB) -- cycle;
+
+        \pgfkeys{/markOptions/.cd, x=\navA + 1.2 \navC, y=\navB + 5 * \navC, scaling=\navC}
+        \navTopMark
+
+    }
+
+    % Cylindircal bouy:
+    \ifdefstring{\navBuoyOption}{cylindrical}{
+        % Left side
+        \draw[\navBuoyArea] (-1.75 * \navC + \navA, \navB) -- (-1.4 * \navC + \navA, \navB) -- (-1 * \navC + \navA, 1.85 * \navC + \navB) --
+        % Right side
+        (1.6 * \navC + \navA, 1.25 * \navC + \navB) -- (1.3 * \navC + \navA, \navB) -- (1.75 * \navC + \navA, \navB) -- cycle;
+
+        \pgfkeys{/markOptions/.cd, x=\navA + 0.5 \navC, y=\navB + 3 * \navC, scaling=\navC}
+        \navTopMark
+
+    }
+
+    % Location position
+    \draw[fill=white] (\navA, \navB) circle (0.5 * \navC);
 
 }
 
@@ -267,13 +301,18 @@
     \gdef\navTopSpace{\navTopS * 1.5}
 
     % Ball/Circle
-    \ifdefstring{\navTopMarkings}{ball}{
-        \draw (0.29 * \navTopS + \navTopX, \navTopS + \navTopY) circle (\navTopS * 0.75);
+    \ifdefstring{\navTopMarkings}{circle}{
+        \draw[\navTopArea] (0.29 * \navTopS + \navTopX, \navTopS + \navTopY) circle (\navTopS * 0.75);
     }
 
     % Triangle up
     \ifdefstring{\navTopMarkings}{up}{
         \navTriangleUp{\navTopY}{\navTopX}{\navTopS}
+    }
+
+    % Box
+    \ifdefstring{\navTopMarkings}{box}{
+        \navBox{\navTopY}{\navTopX}{\navTopS}
     }
 
     % Cardinalmarks
@@ -336,7 +375,7 @@
     \gdef\navTriangleUpX{#2}
     \gdef\navTriangleUpScaling{#3}
 
-    \draw (-0.58 * \navTriangleUpScaling + \navTriangleUpX, 0.17 * \navTriangleUpScaling + \navTriangleUpY) --
+    \draw[\navTopArea] (-0.58 * \navTriangleUpScaling + \navTriangleUpX, 0.17 * \navTriangleUpScaling + \navTriangleUpY) --
     (0.57 * \navTriangleUpScaling + \navTriangleUpX, -0.17 * \navTriangleUpScaling + \navTriangleUpY) --
     (0.29 * \navTriangleUpScaling + \navTriangleUpX, \navTriangleUpScaling + \navTriangleUpY) -- cycle;
 }
@@ -353,7 +392,28 @@
     \gdef\navTriangleDownX{#2}
     \gdef\navTriangleDownScaling{#3}
 
-    \draw (-0.28 * \navTriangleDownScaling + \navTriangleDownX, 1.17 * \navTriangleDownScaling + \navTriangleDownY) --
+    \draw[\navTopArea] (-0.28 * \navTriangleDownScaling + \navTriangleDownX, 1.17 * \navTriangleDownScaling + \navTriangleDownY) --
     (0.87 * \navTriangleDownScaling + \navTriangleDownX, 0.83 * \navTriangleDownScaling + \navTriangleDownY) --
     (\navTriangleDownX, \navTriangleDownY) -- cycle;
 }
+
+
+% Box for cylindrical buoy
+% Offset: (0.4, 2.15)
+% Left Bottom:  (-0.1, 2.2) => (-0.5, 0.05)
+% Left Top:     (0.2, 3.5)    => (-0.2, 1.35)
+% Right Bottom: (0.9, 2)    => (0.5, -0.15)
+% Right Top:    (1.75, 3.25)  => (0.85, 1.1)
+
+% Arguments: y-Coord, x-Coord, scaling
+\newcommand{\navBox}[3]{
+    \gdef\navBoxY{#1}
+    \gdef\navBoxX{#2}
+    \gdef\navBoxScaling{#3}
+
+    \draw[\navTopArea] (-0.5 * \navBoxScaling + \navBoxX, 0.05 * \navBoxScaling + \navBoxY) --
+    (-0.2 * \navBoxScaling + \navBoxX, 1.35 * \navBoxScaling + \navBoxY) --
+    (0.85 * \navBoxScaling + \navBoxX, 1.1 * \navBoxScaling + \navBoxY) --
+    (0.5 * \navBoxScaling + \navBoxX, -0.15 * \navBoxScaling + \navBoxY) -- cycle;
+}
+
