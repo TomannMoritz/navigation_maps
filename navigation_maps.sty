@@ -242,7 +242,7 @@
 
     % Set specific mark keys
     % Initial values
-    \pgfkeys{/markOptions/.cd, buoy=pillar, buoyArea=, top=, topArea=}
+    \pgfkeys{/markOptions/.cd, buoy=pillar, buoyArea=, top=, topArea=, scaling=\navC}
     \pgfkeys{/markOptions/.cd, #2}
 
 
@@ -258,7 +258,7 @@
         \path[draw] (\navA, 0.5 * \navC + \navB) -- (1.65 * \navC + \navA, 6.15 * \navC  + \navB);
 
 
-        \pgfkeys{/markOptions/.cd, x=\navA + 1.65 * \navC + 0.29 \navC, y=\navB + 6.15 * \navC + 1.17 * \navC, scaling=\navC}
+        \pgfkeys{/markOptions/.cd, x=\navA + 1.65 * \navC + 0.29 \navC, y=\navB + 6.15 * \navC + 1.17 * \navC}
         \navTopMark
 
     }
@@ -270,7 +270,7 @@
         % Right side
         (0.6 * \navC + \navA, 2.5 * \navC + \navB) -- (1.25 * \navC + \navA, \navB) -- (1.55 * \navC + \navA, \navB) -- cycle;
 
-        \pgfkeys{/markOptions/.cd, x=\navA + 1.2 \navC, y=\navB + 5 * \navC, scaling=\navC}
+        \pgfkeys{/markOptions/.cd, x=\navA + 1.2 \navC, y=\navB + 5 * \navC}
         \navTopMark
 
     }
@@ -282,7 +282,68 @@
         % Right side
         (1.6 * \navC + \navA, 1.25 * \navC + \navB) -- (1.3 * \navC + \navA, \navB) -- (1.75 * \navC + \navA, \navB) -- cycle;
 
-        \pgfkeys{/markOptions/.cd, x=\navA + 0.5 \navC, y=\navB + 3 * \navC, scaling=\navC}
+        \pgfkeys{/markOptions/.cd, x=\navA + 0.5 \navC, y=\navB + 3 * \navC}
+        \navTopMark
+
+    }
+
+
+    % Spherical buoy
+    \ifdefstring{\navBuoyOption}{spherical}{
+        \coordinate (CircleCenter) at (0.15 * \navC + \navA, 0.7 * \navC + \navB);
+
+        \coordinate (Start) at (0.15 * \navC + \navA + 1.532 * \navC, \navB);
+        % \coordinate (End) at (0.15 * \navC + \navA - 1.532 * \navC, \navB);
+
+        \coordinate (Left) at (-2 * \navC + \navA, \navB);
+        \coordinate (Right) at (2.5 * \navC + \navA, \navB);
+
+        % Bottom
+        \draw (Left) -- (Right);
+
+        % Circle
+        \draw (Start) arc[start angle=-40, end angle=220, radius=\navC * 2cm];
+
+        % Mid line
+        \path[draw] (\navA, 0.5 * \navC + \navB) -- (1 * \navC + \navA, 3.1 * \navC  + \navB);
+    }
+
+    % Spar buoy
+    \ifdefstring{\navBuoyOption}{sparbuoy}{
+        % Bottom
+        \draw (-1.2 * \navC + \navA, \navB) -- (1.2 * \navC + \navA, \navB);
+
+        % Buoy
+        % Right side
+        \draw[\navBuoyArea] (0.45 * \navC + \navA, 0.217 * \navC + \navB) -- (1.8 * \navC + \navA, 5.5 * \navC + \navB) --
+        % Left side
+        (1 * \navC + \navA, 5.7 * \navC + \navB) -- (-0.25 * \navC + \navA, 0.48 * \navC + \navB) -- cycle;
+
+        \pgfkeys{/markOptions/.cd, x=\navA + 1.6 * \navC, y=\navB + 6.4 * \navC}
+        \navTopMark
+
+    }
+
+    % Barrel buoy
+    \ifdefstring{\navBuoyOption}{barrelbuoy}{
+        \navBarrelBuoy{\navB}{\navA}{\navC}
+
+    }
+
+    % Superbuoy
+    \ifdefstring{\navBuoyOption}{superbuoy}{
+        % Left side
+        \draw[\navBuoyArea] (-2.75 * \navC + \navA, \navB) -- (-2 * \navC + \navA, \navB) -- (-1.6 * \navC + \navA, 1.25 * \navC + \navB) --
+        % Right side
+        (1.6 * \navC + \navA, 1.25 * \navC + \navB) -- (2 * \navC + \navA, \navB) -- (2.75 * \navC + \navA, \navB) -- cycle;
+
+    }
+
+    % Mooring buoy
+    \ifdefstring{\navBuoyOption}{mooringbuoy}{
+        \navBarrelBuoy{\navB}{\navA}{\navC}
+
+        \pgfkeys{/markOptions/.cd, x=\navA - 0.5 * \navC, y=\navB + 1.35 * \navC, scaling=\navC * 0.5, top=circle}
         \navTopMark
 
     }
@@ -415,5 +476,22 @@
     (-0.2 * \navBoxScaling + \navBoxX, 1.35 * \navBoxScaling + \navBoxY) --
     (0.85 * \navBoxScaling + \navBoxX, 1.1 * \navBoxScaling + \navBoxY) --
     (0.5 * \navBoxScaling + \navBoxX, -0.15 * \navBoxScaling + \navBoxY) -- cycle;
+}
+
+
+% Arguments: y-Coord, x-Coord, scaling
+\newcommand{\navBarrelBuoy}[3]{
+    \gdef\navBarrelY{#1}
+    \gdef\navBarrelX{#2}
+    \gdef\navBarrelS{#3}
+
+    % Left side
+    \draw[\navBuoyArea] (-2 * \navBarrelS + \navBarrelX, \navBarrelY) -- (-1.5 * \navBarrelS + \navBarrelX, \navBarrelY) -- (-1.5 * \navBarrelS + \navBarrelX, 0.75 * \navBarrelS + \navBarrelY) --
+    (-1.5 * \navBarrelS + \navBarrelX, 0.75 * \navBarrelS + \navBarrelY) arc[start angle=180, end angle=90, radius=\navBarrelS * 0.75cm] --
+    % Right side
+    (0.25 * \navBarrelS + \navBarrelX, 1.5 * \navBarrelS + \navBarrelY) --
+    (0.25 * \navBarrelS + \navBarrelX, 1.5 * \navBarrelS + \navBarrelY) arc[start angle=90, end angle=0, radius=\navBarrelS * 0.75cm] --
+    (1 * \navBarrelS + \navBarrelX, \navBarrelY) -- (1.5 * \navBarrelS + \navBarrelX, \navBarrelY) -- cycle;
+
 }
 
