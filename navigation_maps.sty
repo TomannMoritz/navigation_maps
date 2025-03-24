@@ -33,10 +33,10 @@
 
 % Arguments: x/y-Axis, axis diff, axis min, axis max
 \newcommand{\navAxisSetup}[4]{
-    \gdef\navIsXAxis{#1} % 0: x-Axis, other y-Axis
-    \gdef\navAxisDiff{#2}
-    \gdef\navAxisMin{#3}
-    \gdef\navAxisMax{#4}
+    \edef\navIsXAxis{#1} % 0: x-Axis, other y-Axis
+    \edef\navAxisDiff{#2}
+    \edef\navAxisMin{#3}
+    \edef\navAxisMax{#4}
 
     % Check 5 step increments
     \pgfmathsetmacro{\minMinInc}{int(\navAxisMin / 25)}
@@ -145,7 +145,7 @@
     \newcommand{\navBarSize}{0.5}
     \newcommand{\navNumberOffset}{4}
 
-    \gdef\navScaling{#5}
+    \edef\navScaling{#5}
 
     \begin{tikzpicture}[scale=\navScaling]
         % 1 Degree is divided into 60 minutes
@@ -188,6 +188,7 @@
 % Arguments: isXAxis (x: 0, y: 1), Coords
 \newcommand{\navConvertCoords}[2]{
     \pgfkeys{/navConvertCoord/.cd, #2}
+
     \pgfmathparse{#1}
     \ifnum \pgfmathresult=0
         \pgfmathsetmacro{\xMinConv}{\pgfkeysvalueof{/xMin/deg} * 60 * 5 + \pgfkeysvalueof{/xMin/min} * 5}
@@ -220,9 +221,9 @@
 % Arguments: navSymbolSettings
 \newcommand{\navMarkPosition}[1]{
     \pgfkeys{/navSymbolSettings/.cd, #1}
-    \gdef\navPosX{\pgfkeysvalueof{/navSymbolSettings/x}}
-    \gdef\navPosY{\pgfkeysvalueof{/navSymbolSettings/y}}
-    \gdef\navPosS{\pgfkeysvalueof{/navSymbolSettings/scaling} * 0.5}
+    \edef\navPosX{\pgfkeysvalueof{/navSymbolSettings/x}}
+    \edef\navPosY{\pgfkeysvalueof{/navSymbolSettings/y}}
+    \edef\navPosS{\pgfkeysvalueof{/navSymbolSettings/scaling} * 0.5}
 
     % Location position
     \draw[fill=white] (\navPosX, \navPosY) circle (0.5 * \navPosS);
@@ -251,14 +252,14 @@
 \newcommand{\navMarks}[2]{
     % Set general navSymbol keys
     \pgfkeys{/navSymbolSettings/.cd, #1}
-    \gdef\navA{\pgfkeysvalueof{/navSymbolSettings/x}}
-    \gdef\navB{\pgfkeysvalueof{/navSymbolSettings/y}}
-    \gdef\navC{\pgfkeysvalueof{/navSymbolSettings/scaling} * 0.5}
+    \edef\navX{\pgfkeysvalueof{/navSymbolSettings/x}}
+    \edef\navY{\pgfkeysvalueof{/navSymbolSettings/y}}
+    \edef\navS{\pgfkeysvalueof{/navSymbolSettings/scaling} * 0.5}
 
 
     % Set specific mark keys
     % Initial values
-    \pgfkeys{/markOptions/.cd, buoy=pillar, buoyArea=, top=, topArea=, scaling=\navC, lightSide=, lightColor=white}
+    \pgfkeys{/markOptions/.cd, buoy=pillar, buoyArea=, top=, topArea=, scaling=\navS, lightSide=, lightColor=white}
     \pgfkeys{/markOptions/.cd, #2}
 
     % Replace white light color with yellow
@@ -266,140 +267,274 @@
         \pgfkeys{/markOptions/.cd, lightColor=yellow}
     }
 
-    % TODO: different marks
+    % Marking/Buoy options
+    % Pillar buoy:
     \ifdefstring{\navBuoyOption}{pillar}{
-        % Right side
-        \draw[\navBuoyArea] (2.5 * \navC + \navA, \navB) -- (1.9 * \navC + \navA, \navB) -- (1.5 * \navC + \navA, 1.8 * \navC + \navB) -- (2.2 * \navC + \navA, 6 * \navC + \navB) --
-        % Left Side
-        (1.1 * \navC + \navA, 6.3 * \navC + \navB) -- (-0.4 * \navC + \navA, 2.4 * \navC + \navB) -- (-1.9 * \navC + \navA, \navB) -- (-2.5 * \navC + \navA, \navB) -- cycle;
-
-
-        % Mid line
-        \path[draw] (\navA, 0.5 * \navC + \navB) -- (1.65 * \navC + \navA, 6.15 * \navC  + \navB);
-
-
-        \pgfkeys{/markOptions/.cd, x=\navA + 1.65 * \navC + 0.29 \navC, y=\navB + 6.15 * \navC + 1.17 * \navC}
-        \navTopMark
-
+        \navPillarBuoy{\navY}{\navX}{\navS}
     }
 
     % Conical bouy:
     \ifdefstring{\navBuoyOption}{conical}{
-        % Left side
-        \draw[\navBuoyArea] (-1.55 * \navC + \navA, \navB) -- (-1.3 * \navC + \navA, \navB) --
-        % Right side
-        (0.6 * \navC + \navA, 2.5 * \navC + \navB) -- (1.25 * \navC + \navA, \navB) -- (1.55 * \navC + \navA, \navB) -- cycle;
-
-        \pgfkeys{/markOptions/.cd, x=\navA + 1.2 \navC, y=\navB + 5 * \navC}
-        \navTopMark
-
+        \navConicalBuoy{\navY}{\navX}{\navS}
     }
 
     % Cylindircal bouy:
     \ifdefstring{\navBuoyOption}{cylindrical}{
-        % Left side
-        \draw[\navBuoyArea] (-1.75 * \navC + \navA, \navB) -- (-1.4 * \navC + \navA, \navB) -- (-1 * \navC + \navA, 1.85 * \navC + \navB) --
-        % Right side
-        (1.6 * \navC + \navA, 1.25 * \navC + \navB) -- (1.3 * \navC + \navA, \navB) -- (1.75 * \navC + \navA, \navB) -- cycle;
-
-        \pgfkeys{/markOptions/.cd, x=\navA + 0.5 \navC, y=\navB + 3 * \navC}
-        \navTopMark
-
+        \navCylindricalBuoy{\navY}{\navX}{\navS}
     }
-
 
     % Spherical buoy
     \ifdefstring{\navBuoyOption}{spherical}{
-        \coordinate (CircleCenter) at (0.15 * \navC + \navA, 0.7 * \navC + \navB);
-
-        \coordinate (Start) at (0.15 * \navC + \navA + 1.532 * \navC, \navB);
-        % \coordinate (End) at (0.15 * \navC + \navA - 1.532 * \navC, \navB);
-
-        \coordinate (Left) at (-2 * \navC + \navA, \navB);
-        \coordinate (Right) at (2.5 * \navC + \navA, \navB);
-
-        % Bottom
-        \draw (Left) -- (Right);
-
-        % Circle
-        \draw (Start) arc[start angle=-40, end angle=220, radius=\navC * 2cm];
-
-        % Mid line
-        \path[draw] (\navA, 0.5 * \navC + \navB) -- (1 * \navC + \navA, 3.1 * \navC  + \navB);
+        \navSphericalBuoy{\navY}{\navX}{\navS}
     }
 
     % Spar buoy
     \ifdefstring{\navBuoyOption}{sparbuoy}{
-        % Bottom
-        \draw (-1.2 * \navC + \navA, \navB) -- (1.2 * \navC + \navA, \navB);
-
-        % Buoy
-        % Right side
-        \draw[\navBuoyArea] (0.45 * \navC + \navA, 0.217 * \navC + \navB) -- (1.8 * \navC + \navA, 5.5 * \navC + \navB) --
-        % Left side
-        (1 * \navC + \navA, 5.7 * \navC + \navB) -- (-0.25 * \navC + \navA, 0.48 * \navC + \navB) -- cycle;
-
-        \pgfkeys{/markOptions/.cd, x=\navA + 1.6 * \navC, y=\navB + 6.4 * \navC}
-        \navTopMark
-
+        \navSparBuoy{\navY}{\navX}{\navS}
     }
 
     % Barrel buoy
     \ifdefstring{\navBuoyOption}{barrelbuoy}{
-        \navBarrelBuoy{\navB}{\navA}{\navC}
-
+        \navBarrelBuoy{\navY}{\navX}{\navS}
     }
 
     % Superbuoy
     \ifdefstring{\navBuoyOption}{superbuoy}{
-        % Left side
-        \draw[\navBuoyArea] (-2.75 * \navC + \navA, \navB) -- (-2 * \navC + \navA, \navB) -- (-1.6 * \navC + \navA, 1.25 * \navC + \navB) --
-        % Right side
-        (1.6 * \navC + \navA, 1.25 * \navC + \navB) -- (2 * \navC + \navA, \navB) -- (2.75 * \navC + \navA, \navB) -- cycle;
-
+        \navSuperBuoy{\navY}{\navX}{\navS}
     }
 
     % Mooring buoy
     \ifdefstring{\navBuoyOption}{mooringbuoy}{
-        \navBarrelBuoy{\navB}{\navA}{\navC}
+        \navBarrelBuoy{\navY}{\navX}{\navS}
 
-        \pgfkeys{/markOptions/.cd, x=\navA - 0.5 * \navC, y=\navB + 1.35 * \navC, scaling=\navC * 0.5, top=circle}
+        \pgfkeys{/markOptions/.cd, x=\navX - 0.5 * \navS, y=\navY + 1.35 * \navS, scaling=\navS * 0.5, top=circle}
         \navTopMark
-
     }
 
     % Location position
-    \draw[fill=white] (\navA, \navB) circle (0.5 * \navC);
+    \draw[fill=white] (\navX, \navY) circle (0.5 * \navS);
 
     % Lighted marks
     \ifdefstring{\navLightSide}{left}{
-        \navLightedMarkLeft{\navB}{\navA}{\navC}{\navLightColor}
-
+        \navLightedMarkLeft{\navY}{\navX}{\navS}{\navLightColor}
     }
 
     \ifdefstring{\navLightSide}{right}{
-        \navLightedMarkRight{\navB}{\navA}{\navC}{\navLightColor}
-
+        \navLightedMarkRight{\navY}{\navX}{\navS}{\navLightColor}
     }
 
     % LightHouse
     \ifdefstring{\navBuoyOption}{lighthouse}{
-        \navLightHouse{\navB}{\navA}{\navC}
+        \navLightHouse{\navY}{\navX}{\navS}
 
         \ifdefstring{\navTopArea}{fill}{
-            \draw[fill] (\navA, \navB) circle (0.5 * \navC);
+            \draw[fill] (\navX, \navY) circle (0.5 * \navS);
         }
     }
+
+}
+
+% Draw markings/buoys
+\newcommand{\navPillarBuoy}[3]{
+    \edef\navPillarY{#1}
+    \edef\navPillarX{#2}
+    \edef\navPillarS{#3}
+
+    % Right side
+    \draw[\navBuoyArea] (2.5 * \navPillarS + \navPillarX, \navPillarY) -- (1.9 * \navPillarS + \navPillarX, \navPillarY) -- (1.5 * \navPillarS + \navPillarX, 1.8 * \navPillarS + \navPillarY) -- (2.2 * \navPillarS + \navPillarX, 6 * \navPillarS + \navPillarY) --
+    % Left Side
+    (1.1 * \navPillarS + \navPillarX, 6.3 * \navPillarS + \navPillarY) -- (-0.4 * \navPillarS + \navPillarX, 2.4 * \navPillarS + \navPillarY) -- (-1.9 * \navPillarS + \navPillarX, \navPillarY) -- (-2.5 * \navPillarS + \navPillarX, \navPillarY) -- cycle;
+
+
+    % Mid line
+    \path[draw] (\navPillarX, 0.5 * \navPillarS + \navPillarY) -- (1.65 * \navPillarS + \navPillarX, 6.15 * \navPillarS  + \navPillarY);
+
+
+    \pgfkeys{/markOptions/.cd, x=\navPillarX + 1.65 * \navPillarS + 0.29 \navPillarS, y=\navPillarY + 6.15 * \navPillarS + 1.17 * \navPillarS}
+    \navTopMark
+
+}
+
+\newcommand{\navConicalBuoy}[3]{
+    \edef\navConicalY{#1}
+    \edef\navConicalX{#2}
+    \edef\navConicalS{#3}
+
+    % Left side
+    \draw[\navBuoyArea] (-1.55 * \navConicalS + \navConicalX, \navConicalY) -- (-1.3 * \navConicalS + \navConicalX, \navConicalY) --
+    % Right side
+    (0.6 * \navConicalS + \navConicalX, 2.5 * \navConicalS + \navConicalY) -- (1.25 * \navConicalS + \navConicalX, \navConicalY) -- (1.55 * \navConicalS + \navConicalX, \navConicalY) -- cycle;
+
+    \pgfkeys{/markOptions/.cd, x=\navConicalX + 1.2 \navConicalS, y=\navConicalY + 5 * \navConicalS}
+    \navTopMark
+
+}
+
+\newcommand{\navCylindricalBuoy}[3]{
+    \edef\navCylinY{#1}
+    \edef\navCylinX{#2}
+    \edef\navCylinS{#3}
+
+    % Left side
+    \draw[\navBuoyArea] (-1.75 * \navCylinS + \navCylinX, \navCylinY) -- (-1.4 * \navCylinS + \navCylinX, \navCylinY) -- (-1 * \navCylinS + \navCylinX, 1.85 * \navCylinS + \navCylinY) --
+    % Right side
+    (1.6 * \navCylinS + \navCylinX, 1.25 * \navCylinS + \navCylinY) -- (1.3 * \navCylinS + \navCylinX, \navCylinY) -- (1.75 * \navCylinS + \navCylinX, \navCylinY) -- cycle;
+
+    \pgfkeys{/markOptions/.cd, x=\navCylinX + 0.5 \navCylinS, y=\navCylinY + 3 * \navCylinS}
+    \navTopMark
+
+}
+
+\newcommand{\navSphericalBuoy}[3]{
+    \edef\navSphereY{#1}
+    \edef\navSphereX{#2}
+    \edef\navSphereS{#3}
+
+    \coordinate (CircleCenter) at (0.15 * \navSphereS + \navSphereX, 0.7 * \navSphereS + \navSphereY);
+
+    \coordinate (Start) at (0.15 * \navSphereS + \navSphereX + 1.532 * \navSphereS, \navSphereY);
+    % \coordinate (End) at (0.15 * \navSphereS + \navSphereX - 1.532 * \navSphereS, \navSphereY);
+
+    \coordinate (Left) at (-2 * \navSphereS + \navSphereX, \navSphereY);
+    \coordinate (Right) at (2.5 * \navSphereS + \navSphereX, \navSphereY);
+
+    % Bottom
+    \draw (Left) -- (Right);
+
+    % Circle
+    \draw (Start) arc[start angle=-40, end angle=220, radius=\navSphereS * 2cm];
+
+    % Mid line
+    \path[draw] (\navSphereX, 0.5 * \navSphereS + \navSphereY) -- (1 * \navSphereS + \navSphereX, 3.1 * \navSphereS  + \navSphereY);
+}
+
+\newcommand{\navSparBuoy}[3]{
+    \edef\navSparY{#1}
+    \edef\navSparX{#2}
+    \edef\navSparS{#3}
+
+    % Bottom
+    \draw (-1.2 * \navSparS + \navSparX, \navSparY) -- (1.2 * \navSparS + \navSparX, \navSparY);
+
+    % Buoy
+    % Right side
+    \draw[\navBuoyArea] (0.45 * \navSparS + \navSparX, 0.217 * \navSparS + \navSparY) -- (1.8 * \navSparS + \navSparX, 5.5 * \navSparS + \navSparY) --
+    % Left side
+    (1 * \navSparS + \navSparX, 5.7 * \navSparS + \navSparY) -- (-0.25 * \navSparS + \navSparX, 0.48 * \navSparS + \navSparY) -- cycle;
+
+    \pgfkeys{/markOptions/.cd, x=\navSparX + 1.6 * \navSparS, y=\navSparY + 6.4 * \navSparS}
+    \navTopMark
+}
+
+\newcommand{\navBarrelBuoy}[3]{
+    \edef\navBarrelY{#1}
+    \edef\navBarrelX{#2}
+    \edef\navBarrelS{#3}
+
+    % Left side
+    \draw[\navBuoyArea] (-2 * \navBarrelS + \navBarrelX, \navBarrelY) -- (-1.5 * \navBarrelS + \navBarrelX, \navBarrelY) -- (-1.5 * \navBarrelS + \navBarrelX, 0.75 * \navBarrelS + \navBarrelY) --
+    (-1.5 * \navBarrelS + \navBarrelX, 0.75 * \navBarrelS + \navBarrelY) arc[start angle=180, end angle=90, radius=\navBarrelS * 0.75cm] --
+    % Right side
+    (0.25 * \navBarrelS + \navBarrelX, 1.5 * \navBarrelS + \navBarrelY) --
+    (0.25 * \navBarrelS + \navBarrelX, 1.5 * \navBarrelS + \navBarrelY) arc[start angle=90, end angle=0, radius=\navBarrelS * 0.75cm] --
+    (1 * \navBarrelS + \navBarrelX, \navBarrelY) -- (1.5 * \navBarrelS + \navBarrelX, \navBarrelY) -- cycle;
+}
+
+\newcommand{\navSuperBuoy}[3]{
+    \edef\navSuperY{#1}
+    \edef\navSuperX{#2}
+    \edef\navSuperS{#3}
+
+    % Left side
+    \draw[\navBuoyArea] (-2.75 * \navSuperS + \navSuperX, \navSuperY) -- (-2 * \navSuperS + \navSuperX, \navSuperY) -- (-1.6 * \navSuperS + \navSuperX, 1.25 * \navSuperS + \navSuperY) --
+    % Right side
+    (1.6 * \navSuperS + \navSuperX, 1.25 * \navSuperS + \navSuperY) -- (2 * \navSuperS + \navSuperX, \navSuperY) -- (2.75 * \navSuperS + \navSuperX, \navSuperY) -- cycle;
+
+}
+
+% Arguments: y-Coord, x-Coord, scaling, light color
+\newcommand{\navLightedMarkLeft}[4]{
+    \edef\navLightY{#1}
+    \edef\navLightX{#2}
+    \edef\navLightS{#3}
+
+    \draw[#4, fill=#4] (-5 * \navLightS + \navLightX, -3 * \navLightS + \navLightY) --
+    (-0.5 * \navLightS + \navLightX, -0.5 * \navLightS + \navLightY) --
+    (-3 * \navLightS + \navLightX, -5 * \navLightS + \navLightY) --
+    (-3 * \navLightS + \navLightX, -5 * \navLightS + \navLightY) arc[start angle=-45, end angle=-225, radius=\navLightS * 1.4142cm] -- cycle;
+
+}
+
+% Arguments: y-Coord, x-Coord, scaling, light color
+\newcommand{\navLightedMarkRight}[4]{
+    \edef\navLightY{#1}
+    \edef\navLightX{#2}
+    \edef\navLightS{#3}
+
+    \draw[#4, fill=#4] (3 * \navLightS + \navLightX, -5 * \navLightS + \navLightY) --
+    (0.5 * \navLightS + \navLightX, -0.5 * \navLightS + \navLightY) --
+    (5 * \navLightS + \navLightX, -3 * \navLightS + \navLightY) --
+    (5 * \navLightS + \navLightX, -3 * \navLightS + \navLightY) arc[start angle=45, end angle=-135, radius=\navLightS * 1.4142cm] -- cycle;
+
+}
+
+
+% Arguments: y-Coord, x-Coord, scaling
+\newcommand{\navLightHouse}[3]{
+    \edef\navLightHouseY{#1}
+    \edef\navLightHouseX{#2}
+    \edef\navLightHouseS{#3}
+
+    \draw[fill] (\navLightHouseX, -0.6 * \navLightHouseS + \navLightHouseY) --
+    (0.9 * \navLightHouseS + \navLightHouseX, -1.1 * \navLightHouseS + \navLightHouseY) --
+    (0.6 * \navLightHouseS + \navLightHouseX, -0.2 * \navLightHouseS + \navLightHouseY) --
+    (1.4 * \navLightHouseS + \navLightHouseX, 0.5 * \navLightHouseS + \navLightHouseY) --
+    (0.35 * \navLightHouseS + \navLightHouseX, 0.5 * \navLightHouseS + \navLightHouseY) --
+    (\navLightHouseX, 1.5 * \navLightHouseS + \navLightHouseY) --
+    (-0.35 * \navLightHouseS + \navLightHouseX, 0.5 * \navLightHouseS + \navLightHouseY) --
+    (-1.4 * \navLightHouseS + \navLightHouseX, 0.5 * \navLightHouseS + \navLightHouseY) --
+    (-0.6 * \navLightHouseS + \navLightHouseX, -0.2 * \navLightHouseS + \navLightHouseY) --
+    (-0.9 * \navLightHouseS + \navLightHouseX, -1.1 * \navLightHouseS + \navLightHouseY) -- cycle;
+
+}
+
+
+\pgfkeys{
+    /LightHouseFire/.is family,
+    /LightHouseFire/color/.store in = \navLightHouseFireColor,
+    /LightHouseFire/start angle/.store in = \navLightHouseFireStartAngle,
+    /LightHouseFire/end angle/.store in = \navLightHouseFireEndAngle,
+}
+
+% Arguments: LightHouseFire
+\newcommand{\navLightHouseFire}[1]{
+    \pgfkeys{/LightHouseFire/.cd, color=black, start angle=0, end angle=90}
+    \pgfkeys{/LightHouseFire/.cd, #1}
+
+    % Replace white light color with yellow
+    \ifdefstring{\navLightHouseFireColor}{white}{
+        \pgfkeys{/LightHouseFire/.cd, color=yellow}
+    }
+
+    \edef\navLightHouseFireX{\pgfkeysvalueof{/navSymbolSettings/x}}
+    \edef\navLightHouseFireY{\pgfkeysvalueof{/navSymbolSettings/y}}
+    \edef\navLightHouseFireS{\pgfkeysvalueof{/navSymbolSettings/scaling}}
+
+    \edef\LightHouseFireAngle{\navLightHouseFireStartAngle}
+    \pgfmathsetmacro{\LightHouseFireStartPosX}{\navLightHouseFireX + \navLightHouseFireS * 3 * cos(\LightHouseFireAngle)}
+    \pgfmathsetmacro{\LightHouseFireStartPosY}{\navLightHouseFireY + \navLightHouseFireS * 3 * sin(\LightHouseFireAngle)}
+
+    \draw[\navLightHouseFireColor] (\LightHouseFireStartPosX, \LightHouseFireStartPosY) arc[start angle=\navLightHouseFireStartAngle, end angle=\navLightHouseFireEndAngle, radius=\navLightHouseFireS * 3cm];
 
 }
 
 
 \newcommand{\navTopMark}[0]{
     % Set arguments
-    \gdef\navTopX{\pgfkeysvalueof{/markOptions/x}}
-    \gdef\navTopY{\pgfkeysvalueof{/markOptions/y}}
-    \gdef\navTopS{\pgfkeysvalueof{/markOptions/scaling} * 1.5}
-    \gdef\navTopSpace{\navTopS * 1.5}
+    \edef\navTopX{\pgfkeysvalueof{/markOptions/x}}
+    \edef\navTopY{\pgfkeysvalueof{/markOptions/y}}
+    \edef\navTopS{\pgfkeysvalueof{/markOptions/scaling} * 1.5}
+    \edef\navTopSpace{\navTopS * 1.5}
 
     % Ball/Circle
     \ifdefstring{\navTopMarkings}{circle}{
@@ -472,9 +607,9 @@
 
 % Arguments: y-Coord, x-Coord, scaling
 \newcommand{\navTriangleUp}[3]{
-    \gdef\navTriangleUpY{#1}
-    \gdef\navTriangleUpX{#2}
-    \gdef\navTriangleUpScaling{#3}
+    \edef\navTriangleUpY{#1}
+    \edef\navTriangleUpX{#2}
+    \edef\navTriangleUpScaling{#3}
 
     \draw[\navTopArea] (-0.58 * \navTriangleUpScaling + \navTriangleUpX, 0.17 * \navTriangleUpScaling + \navTriangleUpY) --
     (0.57 * \navTriangleUpScaling + \navTriangleUpX, -0.17 * \navTriangleUpScaling + \navTriangleUpY) --
@@ -483,15 +618,15 @@
 
 % Arguments: y-Coord, x-Coord
 \newcommand{\navPositionNextMark}[2]{
-    \gdef\navNextMarkY{1 * \navTopSpace + #1}
-    \gdef\navNextMarkX{0.29 * \navTopSpace + #2}
+    \edef\navNextMarkY{1 * \navTopSpace + #1}
+    \edef\navNextMarkX{0.29 * \navTopSpace + #2}
 }
 
 % Arguments: y-Coord, x-Coord, scaling
 \newcommand{\navTriangleDown}[3]{
-    \gdef\navTriangleDownY{#1}
-    \gdef\navTriangleDownX{#2}
-    \gdef\navTriangleDownScaling{#3}
+    \edef\navTriangleDownY{#1}
+    \edef\navTriangleDownX{#2}
+    \edef\navTriangleDownScaling{#3}
 
     \draw[\navTopArea] (-0.28 * \navTriangleDownScaling + \navTriangleDownX, 1.17 * \navTriangleDownScaling + \navTriangleDownY) --
     (0.87 * \navTriangleDownScaling + \navTriangleDownX, 0.83 * \navTriangleDownScaling + \navTriangleDownY) --
@@ -508,9 +643,9 @@
 
 % Arguments: y-Coord, x-Coord, scaling
 \newcommand{\navBox}[3]{
-    \gdef\navBoxY{#1}
-    \gdef\navBoxX{#2}
-    \gdef\navBoxScaling{#3}
+    \edef\navBoxY{#1}
+    \edef\navBoxX{#2}
+    \edef\navBoxScaling{#3}
 
     \draw[\navTopArea] (-0.5 * \navBoxScaling + \navBoxX, 0.05 * \navBoxScaling + \navBoxY) --
     (-0.2 * \navBoxScaling + \navBoxX, 1.35 * \navBoxScaling + \navBoxY) --
@@ -519,95 +654,6 @@
 }
 
 
-% Arguments: y-Coord, x-Coord, scaling
-\newcommand{\navBarrelBuoy}[3]{
-    \gdef\navBarrelY{#1}
-    \gdef\navBarrelX{#2}
-    \gdef\navBarrelS{#3}
-
-    % Left side
-    \draw[\navBuoyArea] (-2 * \navBarrelS + \navBarrelX, \navBarrelY) -- (-1.5 * \navBarrelS + \navBarrelX, \navBarrelY) -- (-1.5 * \navBarrelS + \navBarrelX, 0.75 * \navBarrelS + \navBarrelY) --
-    (-1.5 * \navBarrelS + \navBarrelX, 0.75 * \navBarrelS + \navBarrelY) arc[start angle=180, end angle=90, radius=\navBarrelS * 0.75cm] --
-    % Right side
-    (0.25 * \navBarrelS + \navBarrelX, 1.5 * \navBarrelS + \navBarrelY) --
-    (0.25 * \navBarrelS + \navBarrelX, 1.5 * \navBarrelS + \navBarrelY) arc[start angle=90, end angle=0, radius=\navBarrelS * 0.75cm] --
-    (1 * \navBarrelS + \navBarrelX, \navBarrelY) -- (1.5 * \navBarrelS + \navBarrelX, \navBarrelY) -- cycle;
-}
 
 
-% Arguments: y-Coord, x-Coord, scaling, light color
-\newcommand{\navLightedMarkLeft}[4]{
-    \gdef\navLightY{#1}
-    \gdef\navLightX{#2}
-    \gdef\navLightS{#3}
-
-    \draw[#4, fill=#4] (-5 * \navLightS + \navLightX, -3 * \navLightS + \navLightY) --
-    (-0.5 * \navLightS + \navLightX, -0.5 * \navLightS + \navLightY) --
-    (-3 * \navLightS + \navLightX, -5 * \navLightS + \navLightY) --
-    (-3 * \navLightS + \navLightX, -5 * \navLightS + \navLightY) arc[start angle=-45, end angle=-225, radius=\navLightS * 1.4142cm] -- cycle;
-
-}
-
-% Arguments: y-Coord, x-Coord, scaling, light color
-\newcommand{\navLightedMarkRight}[4]{
-    \gdef\navLightY{#1}
-    \gdef\navLightX{#2}
-    \gdef\navLightS{#3}
-
-    \draw[#4, fill=#4] (3 * \navLightS + \navLightX, -5 * \navLightS + \navLightY) --
-    (0.5 * \navLightS + \navLightX, -0.5 * \navLightS + \navLightY) --
-    (5 * \navLightS + \navLightX, -3 * \navLightS + \navLightY) --
-    (5 * \navLightS + \navLightX, -3 * \navLightS + \navLightY) arc[start angle=45, end angle=-135, radius=\navLightS * 1.4142cm] -- cycle;
-
-}
-
-
-% Arguments: y-Coord, x-Coord, scaling
-\newcommand{\navLightHouse}[3]{
-    \gdef\navLightHouseY{#1}
-    \gdef\navLightHouseX{#2}
-    \gdef\navLightHouseS{#3}
-
-    \draw[fill] (\navLightHouseX, -0.6 * \navLightHouseS + \navLightHouseY) --
-    (0.9 * \navLightHouseS + \navLightHouseX, -1.1 * \navLightHouseS + \navLightHouseY) --
-    (0.6 * \navLightHouseS + \navLightHouseX, -0.2 * \navLightHouseS + \navLightHouseY) --
-    (1.4 * \navLightHouseS + \navLightHouseX, 0.5 * \navLightHouseS + \navLightHouseY) --
-    (0.35 * \navLightHouseS + \navLightHouseX, 0.5 * \navLightHouseS + \navLightHouseY) --
-    (\navLightHouseX, 1.5 * \navLightHouseS + \navLightHouseY) --
-    (-0.35 * \navLightHouseS + \navLightHouseX, 0.5 * \navLightHouseS + \navLightHouseY) --
-    (-1.4 * \navLightHouseS + \navLightHouseX, 0.5 * \navLightHouseS + \navLightHouseY) --
-    (-0.6 * \navLightHouseS + \navLightHouseX, -0.2 * \navLightHouseS + \navLightHouseY) --
-    (-0.9 * \navLightHouseS + \navLightHouseX, -1.1 * \navLightHouseS + \navLightHouseY) -- cycle;
-
-}
-
-
-\pgfkeys{
-    /LightHouseFire/.is family,
-    /LightHouseFire/color/.store in = \navLightHouseFireColor,
-    /LightHouseFire/start angle/.store in = \navLightHouseFireStartAngle,
-    /LightHouseFire/end angle/.store in = \navLightHouseFireEndAngle,
-}
-
-% Arguments: LightHouseFire
-\newcommand{\navLightHouseFire}[1]{
-    \pgfkeys{/LightHouseFire/.cd, color=black, start angle=0, end angle=90}
-    \pgfkeys{/LightHouseFire/.cd, #1}
-
-    % Replace white light color with yellow
-    \ifdefstring{\navLightHouseFireColor}{white}{
-        \pgfkeys{/LightHouseFire/.cd, color=yellow}
-    }
-
-    \gdef\navLightHouseFireX{\pgfkeysvalueof{/navSymbolSettings/x}}
-    \gdef\navLightHouseFireY{\pgfkeysvalueof{/navSymbolSettings/y}}
-    \gdef\navLightHouseFireS{\pgfkeysvalueof{/navSymbolSettings/scaling}}
-
-    \gdef\LightHouseFireAngle{\navLightHouseFireStartAngle}
-    \pgfmathsetmacro{\LightHouseFireStartPosX}{\navLightHouseFireX + \navLightHouseFireS * 3 * cos(\LightHouseFireAngle)}
-    \pgfmathsetmacro{\LightHouseFireStartPosY}{\navLightHouseFireY + \navLightHouseFireS * 3 * sin(\LightHouseFireAngle)}
-
-    \draw[\navLightHouseFireColor] (\LightHouseFireStartPosX, \LightHouseFireStartPosY) arc[start angle=\navLightHouseFireStartAngle, end angle=\navLightHouseFireEndAngle, radius=\navLightHouseFireS * 3cm];
-
-}
 
