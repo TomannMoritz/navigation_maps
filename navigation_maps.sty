@@ -204,7 +204,7 @@
 
 
 % Return the key value from previous coord calculation
-\newcommand{\navGetCoord}[1]{
+\newcommand{\navGetAxis}[1]{
     \pgfkeysvalueof{/navConvertCoord/#1}
 }
 
@@ -217,6 +217,20 @@
     /navSymbolSettings/option/.initial=0
 }
 
+% Arguments: navSymbolSettings
+\newcommand{\navMarkPosition}[1]{
+    \pgfkeys{/navSymbolSettings/.cd, #1}
+    \gdef\navPosX{\pgfkeysvalueof{/navSymbolSettings/x}}
+    \gdef\navPosY{\pgfkeysvalueof{/navSymbolSettings/y}}
+    \gdef\navPosS{\pgfkeysvalueof{/navSymbolSettings/scaling} * 0.5}
+
+    % Location position
+    \draw[fill=white] (\navPosX, \navPosY) circle (0.5 * \navPosS);
+    \draw (-1.25 * \navPosS + \navPosX, -1.25 * \navPosS + \navPosY) -- (1.25 * \navPosS + \navPosX, 1.25 * \navPosS + \navPosY);
+    \draw (-1.25 * \navPosS + \navPosX, 1.25 * \navPosS + \navPosY) -- (1.25 * \navPosS + \navPosX, -1.25 * \navPosS + \navPosY);
+
+}
+
 \pgfkeys{
     /markOptions/.is family,
     % Buoy options: pillar, conical, cylindrical, spherical, ..
@@ -227,6 +241,8 @@
     /markOptions/topArea/.store in = \navTopArea,
     /markOptions/x/.initial=0,
     /markOptions/y/.initial=0,
+    /markOptions/lightSide/.store in = \navLightSide,
+    /markOptions/lightColor/.store in = \navLightColor,
     /markOptions/scaling/.initial=1,
 }
 
@@ -242,9 +258,13 @@
 
     % Set specific mark keys
     % Initial values
-    \pgfkeys{/markOptions/.cd, buoy=pillar, buoyArea=, top=, topArea=, scaling=\navC}
+    \pgfkeys{/markOptions/.cd, buoy=pillar, buoyArea=, top=, topArea=, scaling=\navC, lightSide=, lightColor=white}
     \pgfkeys{/markOptions/.cd, #2}
 
+    % Replace white light color with yellow
+    \ifdefstring{\navLightColor}{white}{
+        \pgfkeys{/markOptions/.cd, lightColor=yellow}
+    }
 
     % TODO: different marks
     \ifdefstring{\navBuoyOption}{pillar}{
@@ -350,6 +370,26 @@
 
     % Location position
     \draw[fill=white] (\navA, \navB) circle (0.5 * \navC);
+
+    % Lighted marks
+    \ifdefstring{\navLightSide}{left}{
+        \navLightedMarkLeft{\navB}{\navA}{\navC}{\navLightColor}
+
+    }
+
+    \ifdefstring{\navLightSide}{right}{
+        \navLightedMarkRight{\navB}{\navA}{\navC}{\navLightColor}
+
+    }
+
+    % LightHouse
+    \ifdefstring{\navBuoyOption}{lighthouse}{
+        \navLightHouse{\navB}{\navA}{\navC}
+
+        \ifdefstring{\navTopArea}{fill}{
+            \draw[fill] (\navA, \navB) circle (0.5 * \navC);
+        }
+    }
 
 }
 
@@ -492,6 +532,82 @@
     (0.25 * \navBarrelS + \navBarrelX, 1.5 * \navBarrelS + \navBarrelY) --
     (0.25 * \navBarrelS + \navBarrelX, 1.5 * \navBarrelS + \navBarrelY) arc[start angle=90, end angle=0, radius=\navBarrelS * 0.75cm] --
     (1 * \navBarrelS + \navBarrelX, \navBarrelY) -- (1.5 * \navBarrelS + \navBarrelX, \navBarrelY) -- cycle;
+}
+
+
+% Arguments: y-Coord, x-Coord, scaling, light color
+\newcommand{\navLightedMarkLeft}[4]{
+    \gdef\navLightY{#1}
+    \gdef\navLightX{#2}
+    \gdef\navLightS{#3}
+
+    \draw[#4, fill=#4] (-5 * \navLightS + \navLightX, -3 * \navLightS + \navLightY) --
+    (-0.5 * \navLightS + \navLightX, -0.5 * \navLightS + \navLightY) --
+    (-3 * \navLightS + \navLightX, -5 * \navLightS + \navLightY) --
+    (-3 * \navLightS + \navLightX, -5 * \navLightS + \navLightY) arc[start angle=-45, end angle=-225, radius=\navLightS * 1.4142cm] -- cycle;
+
+}
+
+% Arguments: y-Coord, x-Coord, scaling, light color
+\newcommand{\navLightedMarkRight}[4]{
+    \gdef\navLightY{#1}
+    \gdef\navLightX{#2}
+    \gdef\navLightS{#3}
+
+    \draw[#4, fill=#4] (3 * \navLightS + \navLightX, -5 * \navLightS + \navLightY) --
+    (0.5 * \navLightS + \navLightX, -0.5 * \navLightS + \navLightY) --
+    (5 * \navLightS + \navLightX, -3 * \navLightS + \navLightY) --
+    (5 * \navLightS + \navLightX, -3 * \navLightS + \navLightY) arc[start angle=45, end angle=-135, radius=\navLightS * 1.4142cm] -- cycle;
+
+}
+
+
+% Arguments: y-Coord, x-Coord, scaling
+\newcommand{\navLightHouse}[3]{
+    \gdef\navLightHouseY{#1}
+    \gdef\navLightHouseX{#2}
+    \gdef\navLightHouseS{#3}
+
+    \draw[fill] (\navLightHouseX, -0.6 * \navLightHouseS + \navLightHouseY) --
+    (0.9 * \navLightHouseS + \navLightHouseX, -1.1 * \navLightHouseS + \navLightHouseY) --
+    (0.6 * \navLightHouseS + \navLightHouseX, -0.2 * \navLightHouseS + \navLightHouseY) --
+    (1.4 * \navLightHouseS + \navLightHouseX, 0.5 * \navLightHouseS + \navLightHouseY) --
+    (0.35 * \navLightHouseS + \navLightHouseX, 0.5 * \navLightHouseS + \navLightHouseY) --
+    (\navLightHouseX, 1.5 * \navLightHouseS + \navLightHouseY) --
+    (-0.35 * \navLightHouseS + \navLightHouseX, 0.5 * \navLightHouseS + \navLightHouseY) --
+    (-1.4 * \navLightHouseS + \navLightHouseX, 0.5 * \navLightHouseS + \navLightHouseY) --
+    (-0.6 * \navLightHouseS + \navLightHouseX, -0.2 * \navLightHouseS + \navLightHouseY) --
+    (-0.9 * \navLightHouseS + \navLightHouseX, -1.1 * \navLightHouseS + \navLightHouseY) -- cycle;
+
+}
+
+
+\pgfkeys{
+    /LightHouseFire/.is family,
+    /LightHouseFire/color/.store in = \navLightHouseFireColor,
+    /LightHouseFire/start angle/.store in = \navLightHouseFireStartAngle,
+    /LightHouseFire/end angle/.store in = \navLightHouseFireEndAngle,
+}
+
+% Arguments: LightHouseFire
+\newcommand{\navLightHouseFire}[1]{
+    \pgfkeys{/LightHouseFire/.cd, color=black, start angle=0, end angle=90}
+    \pgfkeys{/LightHouseFire/.cd, #1}
+
+    % Replace white light color with yellow
+    \ifdefstring{\navLightHouseFireColor}{white}{
+        \pgfkeys{/LightHouseFire/.cd, color=yellow}
+    }
+
+    \gdef\navLightHouseFireX{\pgfkeysvalueof{/navSymbolSettings/x}}
+    \gdef\navLightHouseFireY{\pgfkeysvalueof{/navSymbolSettings/y}}
+    \gdef\navLightHouseFireS{\pgfkeysvalueof{/navSymbolSettings/scaling}}
+
+    \gdef\LightHouseFireAngle{\navLightHouseFireStartAngle}
+    \pgfmathsetmacro{\LightHouseFireStartPosX}{\navLightHouseFireX + \navLightHouseFireS * 3 * cos(\LightHouseFireAngle)}
+    \pgfmathsetmacro{\LightHouseFireStartPosY}{\navLightHouseFireY + \navLightHouseFireS * 3 * sin(\LightHouseFireAngle)}
+
+    \draw[\navLightHouseFireColor] (\LightHouseFireStartPosX, \LightHouseFireStartPosY) arc[start angle=\navLightHouseFireStartAngle, end angle=\navLightHouseFireEndAngle, radius=\navLightHouseFireS * 3cm];
 
 }
 
