@@ -43,6 +43,15 @@
     \pgfmathsetmacro{\minMaxInc}{int(\navAxisMax / 25)}
     \pgfmathsetmacro{\minDiff}{\minMaxInc - \minMinInc}
 
+    % Rescale for small maps
+    \pgfmathparse{#2 - 50}
+    \pgfmathtruncatemacro{\result}{\pgfmathresult}
+    \ifnum\result<0
+        \gdef\navCurrentDegreeOffset{3}
+        \gdef\navAxisDegreeOffset{1}
+        \gdef\navAxisMinuteOffset{1}
+    \fi
+
     \foreach \i in {0, ..., \navAxisDiff}{
         \pgfmathparse{\i}
         \ifnum \pgfmathresult>0
@@ -71,9 +80,9 @@
             % Check x/y-Axis
             \pgfmathparse{\navIsXAxis}
             \ifnum \pgfmathresult=0
-                \draw[blue] (\i, 0) -- (\i, -\navNumberOffset) node[anchor=north]{\currDeg $^{\circ}$};
+                \draw[blue] (\i, 0) -- (\i, -\navAxisDegreeOffset) node[anchor=north]{\currDeg $^{\circ}$};
             \else
-                \draw[blue] (0, \i) -- (-\navNumberOffset, \i) node[anchor=east]{\currDeg $^{\circ}$};
+                \draw[blue] (0, \i) -- (-\navAxisDegreeOffset, \i) node[anchor=east]{\currDeg $^{\circ}$};
             \fi
 
 
@@ -85,7 +94,12 @@
 
             \pgfmathparse{int(\minDiff)}
             \ifnum \pgfmathresult>0
-                \pgfmathsetmacro{\minStepSize}{5 * 5}
+                % Increase step size when a minimum minute range is convered
+                \pgfmathsetmacro{\minNumberOfMin}{\navAxisMax - \navAxisMin}
+                \pgfmathparse{int(\minNumberOfMin)}
+                \ifnum \pgfmathresult>45
+                    \pgfmathsetmacro{\minStepSize}{5 * 5}
+                \fi
             \fi
 
             % Show minutes (numbers)
@@ -107,9 +121,9 @@
         % Check x/y-Axis
         \pgfmathparse{\navIsXAxis}
         \ifnum \pgfmathresult=0
-            \draw[black] (\xCenter, -6) node[anchor=north]{\currDeg $^{\circ}$};
+            \draw[black] (\xCenter, -\navCurrentDegreeOffset) node[anchor=north]{\currDeg $^{\circ}$};
         \else
-            \draw[black] (-6, \xCenter) node[anchor=east]{\currDeg $^{\circ}$};
+            \draw[black] (-\navCurrentDegreeOffset, \xCenter) node[anchor=east]{\currDeg $^{\circ}$};
         \fi
     \fi
 }
@@ -126,9 +140,9 @@
         % Check x/y-Axis
         \pgfmathparse{\navIsXAxis}
         \ifnum \pgfmathresult=0
-            \draw[black] (\i, 0) -- (\i, -2) node[anchor=north]{#1};
+            \draw[black] (\i, 0) -- (\i, -\navAxisMinuteOffset) node[anchor=north]{#1};
         \else
-            \draw[black] (0, \i) -- (-2, \i) node[anchor=east]{#1};
+            \draw[black] (0, \i) -- (-\navAxisMinuteOffset, \i) node[anchor=east]{#1};
         \fi
     \fi
 }
@@ -143,7 +157,9 @@
     \pgfqkeys{/xMax}{#4}
 
     \newcommand{\navBarSize}{0.5}
-    \newcommand{\navNumberOffset}{4}
+    \gdef\navCurrentDegreeOffset{8}
+    \gdef\navAxisDegreeOffset{2}
+    \gdef\navAxisMinuteOffset{2}
 
     \edef\navScaling{#5}
 
